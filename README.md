@@ -4,7 +4,7 @@
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Docker](https://img.shields.io/badge/Docker-24.0-2496ED?logo=docker)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![License](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](LICENSE)
 
 ---
 
@@ -333,4 +333,6 @@ docker compose down
 
 ## Licencia
 
-MIT License — ver [LICENSE](LICENSE) para más detalles.
+Creative Commons Attribution 4.0 International (CC BY 4.0) — ver [LICENSE](LICENSE) para más detalles.
+
+Puedes usar, modificar y distribuir este proyecto, pero **siempre debes mencionar al autor original**.
