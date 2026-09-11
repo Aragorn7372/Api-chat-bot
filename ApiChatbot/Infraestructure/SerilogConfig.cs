@@ -5,15 +5,25 @@ using Serilog.Sinks.SystemConsole.Themes;
 namespace ApiChatbot.Infraestructure;
 
 /// <summary>
-/// Extensiones de configuración para Serilog.
-/// Configura el logger con salida a consola y niveles personalizados.
+/// Configuración de Serilog para logging estructurado.
+/// Configura la salida a consola con formato personalizado y filtros de nivel por namespace.
 /// </summary>
 public static class SerilogConfig
 {
     /// <summary>
-    /// Configura Serilog con salida a consola y filtros de nivel.
+    /// Configura Serilog con salida a consola y filtros de nivel personalizados.
     /// </summary>
-    /// <returns>Configuración de logger lista para usar.</returns>
+    /// <returns>Configuración de logger lista para usar como bootstrap logger.</returns>
+    /// <remarks>
+    /// Filtros de nivel:
+    /// <list type="bullet">
+    ///   <item><description>Nivel mínimo global: Information</description></item>
+    ///   <item><description>Microsoft: Warning (reduce ruido)</description></item>
+    ///   <item><description>Microsoft.Hosting.Lifetime: Information</description></item>
+    ///   <item><description>Microsoft.EntityFrameworkCore.Database.Command: Warning</description></item>
+    /// </list>
+    /// Formato de salida: [HH:mm:ss NIV] Mensaje + Excepción
+    /// </remarks>
     public static LoggerConfiguration Configure()
     {
         return new LoggerConfiguration()

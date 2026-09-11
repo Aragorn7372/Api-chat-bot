@@ -3,6 +3,24 @@ using ApiChatbot.Domain;
 
 namespace ApiChatbot.Background;
 
+/// <summary>
+/// Servicio en segundo plano que construye y actualiza la base de conocimiento del chatbot.
+/// Descarga archivos markdown desde Google Drive, consulta la API de GitHub para obtener
+/// actividad reciente, repositorios y repositorios destacados, y genera el archivo
+/// <c>Data/context.md</c> que el <see cref="ChatService"/> utiliza como contexto del LLM.
+/// </summary>
+/// <remarks>
+/// Ejecución:
+/// <list type="number">
+///   <item><description>Se ejecuta inmediatamente al iniciar la aplicación</description></item>
+///   <item><description>Se re-ejecuta cada 24 horas automáticamente</description></item>
+/// </list>
+/// Fuentes de datos:
+/// <list type="bullet">
+///   <item><description>Archivos markdown de Google Drive (About, Skills, Projects)</description></item>
+///   <item><description>API de GitHub: eventos, repositorios propios y repositorios destacados</description></item>
+/// </list>
+/// </remarks>
 public class ContextBuilderService : BackgroundService
 {
     private readonly ILogger<ContextBuilderService> _logger;
@@ -11,6 +29,13 @@ public class ContextBuilderService : BackgroundService
     private readonly UrlContentFetcher _urlFetcher;
     private readonly string _dataDir;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="ContextBuilderService"/>.
+    /// </summary>
+    /// <param name="logger">Logger para registro de eventos.</param>
+    /// <param name="configuration">Configuración de la aplicación para URLs y usuario de GitHub.</param>
+    /// <param name="httpClientFactory">Factory para crear el cliente HTTP "ContextBuilder".</param>
+    /// <param name="urlFetcher">Descargador de contenido con soporte Google Drive.</param>
     public ContextBuilderService(
         ILogger<ContextBuilderService> logger,
         IConfiguration configuration,
@@ -24,6 +49,11 @@ public class ContextBuilderService : BackgroundService
         _dataDir = Path.Combine(Directory.GetCurrentDirectory(), "Data");
     }
 
+    /// <summary>
+    /// Ejecuta el servicio de construcción de contexto.
+    /// Construye el contexto inicial y luego se re-ejecuta cada 24 horas.
+    /// </summary>
+    /// <param name="stoppingToken">Token de cancelación para detener el servicio.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("ContextBuilderService iniciado");
@@ -37,6 +67,11 @@ public class ContextBuilderService : BackgroundService
         }
     }
 
+    /// <summary>
+    /// Construye el archivo context.md descargando contenido de las URLs configuradas
+    /// y consultando la API de GitHub.
+    /// </summary>
+    /// <param name="ct">Token de cancelación.</param>
     private async Task BuildContextAsync(CancellationToken ct)
     {
         _logger.LogInformation("Construyendo context.md...");
@@ -81,6 +116,12 @@ public class ContextBuilderService : BackgroundService
         _logger.LogInformation("context.md actualizado ({Size} caracteres)", result.Length);
     }
 
+    /// <summary>
+    /// Obtiene la actividad reciente de GitHub: eventos, repositorios propios y destacados.
+    /// </summary>
+    /// <param name="username">Usuario de GitHub.</param>
+    /// <param name="ct">Token de cancelación.</param>
+    /// <returns>Texto formateado con la actividad de GitHub o cadena vacía si hay error.</returns>
     private async Task<string> GetGitHubActivityAsync(string username, CancellationToken ct)
     {
         var lines = new List<string>();
@@ -155,6 +196,11 @@ public class ContextBuilderService : BackgroundService
         return string.Join("\n", lines);
     }
 
+    /// <summary>
+    /// Formatea un evento de GitHub con un emoji descriptivo y tiempo relativo.
+    /// </summary>
+    /// <param name="evt">Evento de GitHub a formatear.</param>
+    /// <returns>Cadena formateada o <c>null</c> si el tipo de evento no es soportado.</returns>
     private static string? FormatEvent(GitHubEvent evt)
     {
         var repo = evt.Repo?.Name ?? "desconocido";
@@ -176,6 +222,11 @@ public class ContextBuilderService : BackgroundService
         };
     }
 
+    /// <summary>
+    /// Calcula el tiempo relativo transcurrido desde una fecha.
+    /// </summary>
+    /// <param name="dt">Fecha a comparar.</param>
+    /// <returns>Cadena con el tiempo relativo (ej: "hace 5 min", "hace 2 días").</returns>
     private static string TimeAgo(DateTime? dt)
     {
         if (dt is null) return "";
@@ -188,31 +239,65 @@ public class ContextBuilderService : BackgroundService
     }
 }
 
+/// <summary>
+/// DTO que representa un evento de la API de GitHub.
+/// </summary>
 public record GitHubEvent
 {
+    /// <summary>Tipo de evento (PushEvent, WatchEvent, ForkEvent, etc.).</summary>
     public string? Type { get; init; }
+
+    /// <summary>Fecha y hora de creación del evento.</summary>
     public DateTime? CreatedAt { get; init; }
+
+    /// <summary>Referencia al repositorio asociado al evento.</summary>
     public GitHubRepoRef? Repo { get; init; }
+
+    /// <summary>Datos adicionales del evento (acción, tipo de referencia, etc.).</summary>
     public GitHubPayload? Payload { get; init; }
 }
 
+/// <summary>
+/// DTO que representa una referencia a un repositorio de GitHub.
+/// </summary>
 public record GitHubRepoRef
 {
+    /// <summary>Nombre del repositorio.</summary>
     public string? Name { get; init; }
 }
 
+/// <summary>
+/// DTO que contiene datos adicionales de un evento de GitHub.
+/// </summary>
 public record GitHubPayload
 {
+    /// <summary>Acción realizada (ej: "created", "closed").</summary>
     public string? Action { get; init; }
+
+    /// <summary>Tipo de referencia (ej: "branch", "tag").</summary>
     public string? RefType { get; init; }
 }
 
+/// <summary>
+/// DTO que representa un repositorio de GitHub.
+/// </summary>
 public record GitHubRepo
 {
+    /// <summary>Nombre corto del repositorio.</summary>
     public string? Name { get; init; }
+
+    /// <summary>Nombre completo (usuario/repo).</summary>
     public string? FullName { get; init; }
+
+    /// <summary>URL HTML del repositorio.</summary>
     public string? HtmlUrl { get; init; }
+
+    /// <summary>Descripción del repositorio.</summary>
     public string? Description { get; init; }
+
+    /// <summary>Número de estrellas.</summary>
     public int StargazersCount { get; init; }
+
+    /// <summary>Número de forks.</summary>
     public int ForksCount { get; init; }
 }

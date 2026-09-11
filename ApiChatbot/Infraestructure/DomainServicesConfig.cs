@@ -6,8 +6,35 @@ using Serilog;
 
 namespace ApiChatbot.Infraestructure;
 
+/// <summary>
+/// Configuración centralizada de inyección de dependencias para los servicios del dominio.
+/// Registra todos los servicios necesarios: clientes HTTP, validadores, proveedores de IA,
+/// almacén de sesiones, analytics, chat service y servicios en segundo plano.
+/// </summary>
 public static class DomainServicesConfig
 {
+    /// <summary>
+    /// Registra todos los servicios del dominio en el contenedor de dependencias.
+    /// </summary>
+    /// <param name="services">Colección de servicios de la aplicación.</param>
+    /// <param name="configuration">Configuración de la aplicación.</param>
+    /// <returns>La colección de servicios para encadenamiento de llamadas.</returns>
+    /// <remarks>
+    /// Servicios registrados:
+    /// <list type="bullet">
+    ///   <item><description>HttpClient "Ollama" (timeout 60s)</description></item>
+    ///   <item><description>HttpClient "ContextBuilder" (timeout 30s)</description></item>
+    ///   <item><description>UrlContentFetcher (singleton)</description></item>
+    ///   <item><description>FluentValidation validators (auto-discovery)</description></item>
+    ///   <item><description>OffTopicFilter (singleton)</description></item>
+    ///   <item><description>ISessionStore → MemorySessionStore (singleton)</description></item>
+    ///   <item><description>IChatProvider → OllamaChatProvider (singleton)</description></item>
+    ///   <item><description>IAnalyticsLogger → RedisAnalyticsLogger (singleton)</description></item>
+    ///   <item><description>ChatService (singleton)</description></item>
+    ///   <item><description>ContextBuilderService (hosted service)</description></item>
+    ///   <item><description>OllamaWarmupService (hosted service)</description></item>
+    /// </list>
+    /// </remarks>
     public static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
         Log.Information("Registrando servicios del dominio...");

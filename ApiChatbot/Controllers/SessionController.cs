@@ -7,9 +7,25 @@ using ApiChatbot.Models;
 
 namespace ApiChatbot.Controllers;
 
+/// <summary>
+/// Controlador para el endpoint de sesiones.
+/// Permite crear tokens JWT anónimos para autenticar las peticiones de chat.
+/// </summary>
 [ApiController]
 [Route("api/v1/session")]
 public class SessionController(IConfiguration configuration) : ControllerBase {
+
+    /// <summary>
+    /// Crea una nueva sesión anónima y devuelve un token JWT.
+    /// El token contiene un claim "session_id" con un GUID único y expira según
+    /// la configuración (default: 24 horas).
+    /// </summary>
+    /// <returns>
+    /// <list type="bullet">
+    ///   <item><description>200 OK con <see cref="SessionResponse"/> que contiene el token y su expiración</description></item>
+    ///   <item><description>500 Internal Server Error si la clave secreta no está configurada</description></item>
+    /// </list>
+    /// </returns>
     [HttpPost]
     public IActionResult CreateSession()
     {
