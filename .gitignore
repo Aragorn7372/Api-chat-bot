@@ -1,0 +1,11 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+
+# Environment secrets
+.env
+
+# Generated context file
+Data/context.md

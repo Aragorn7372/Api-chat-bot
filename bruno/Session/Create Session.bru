@@ -1,0 +1,31 @@
+meta {
+  name: Create Session
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/v1/session
+  body: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+script:post-response {
+  const data = res.getBody();
+  bru.setVar("sessionToken", data.token);
+
+  test("Status 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Has token", function() {
+    expect(data.token).to.be.a("string").that.is.not.empty;
+  });
+
+  test("Has expiresAt", function() {
+    expect(data.expiresAt).to.be.a("string");
+  });
+}

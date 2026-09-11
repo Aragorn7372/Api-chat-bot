@@ -1,0 +1,56 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - internal
+    restart: unless-stopped
+    environment:
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:0.5b}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "ollama serve & sleep 2 && ollama pull ${OLLAMA_MODEL} 2>&1 && wait"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  apichatbot:
+    build:
+      context: .
+      dockerfile: ApiChatbot/Dockerfile
+    container_name: apichatbot
+    env_file:
+      - .env
+    networks:
+      - internal
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - CF_API_TOKEN=${CF_API_TOKEN:-}
+      - CF_DOMAIN=${CF_DOMAIN:-}
+    networks:
+      - internal
+    depends_on:
+      - apichatbot
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+
+networks:
+  internal:
+    driver: bridge

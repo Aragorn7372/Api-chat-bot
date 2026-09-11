@@ -1,0 +1,34 @@
+meta {
+  name: Send Message
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/v1/chat
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Session-Token: {{sessionToken}}
+}
+
+body:json {
+  {
+    "message": "me dices su linkedin? para que se usan las chapas"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  
+  test("Status 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Has reply", function() {
+    expect(data.reply).to.be.a("string").that.is.not.empty;
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Missing Token
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/v1/chat
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "message": "Hola"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+
+  test("Status 401", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("Has error message", function() {
+    expect(data.error).to.be.a("string").that.is.not.empty;
+  });
+}

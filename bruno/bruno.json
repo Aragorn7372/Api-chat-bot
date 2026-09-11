@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "ApiChatbot Tests",
+  "type": "collection",
+  "ignore": [
+    "*.json",
+    "*.env"
+  ]
+}

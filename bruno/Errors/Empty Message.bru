@@ -1,0 +1,33 @@
+meta {
+  name: Empty Message
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/v1/chat
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  X-Session-Token: {{sessionToken}}
+}
+
+body:json {
+  {
+    "message": ""
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+
+  test("Status 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Has validation error", function() {
+    expect(data).to.be.an("array");
+  });
+}
